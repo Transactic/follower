@@ -12,7 +12,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            background: #121212;
+            background: linear-gradient(180deg, #1e1e1e, #000);
             color: #ffffff;
         }
         h1 {
@@ -31,19 +31,14 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
         }
         .control-panel {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
+            margin-top: 20px;
+            width: 80%;
             background-color: #1e1e1e;
             color: white;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .control-panel div {
-            margin: 0 10px;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            text-align: center;
         }
         input {
             padding: 10px;
@@ -156,11 +151,22 @@
                     return;
                 }
 
+                const numFollowers = parseInt(prompt("How many followers to add?", "10"));
+                if (isNaN(numFollowers) || numFollowers <= 0) {
+                    alert("Invalid number of followers.");
+                    return;
+                }
+
+                let addedFollowers = 0;
+
                 for (const token of tokens) {
                     for (const proxy of proxies) {
+                        if (addedFollowers >= numFollowers) break;
                         console.log(`Using proxy: ${proxy} with token: ${token.slice(0, 10)}...`);
                         await followChannelCustom(token, proxy, targetChannel);
+                        addedFollowers++;
                     }
+                    if (addedFollowers >= numFollowers) break;
                 }
             });
         });
