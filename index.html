@@ -69,6 +69,7 @@
                     const text = await response.text();
                     return text.split('\n').filter(line => line.trim());
                 } else {
+                    console.error(`Failed to load proxies. HTTP Status: ${response.status}`);
                     alert('Failed to load proxies. Ensure proxies.txt exists.');
                     return [];
                 }
@@ -85,6 +86,7 @@
                     const text = await response.text();
                     return text.split('\n').filter(line => line.trim());
                 } else {
+                    console.error(`Failed to load tokens. HTTP Status: ${response.status}`);
                     alert('Failed to load tokens. Ensure tokens.txt exists.');
                     return [];
                 }
@@ -111,9 +113,8 @@
 
                 if (response.ok) {
                     console.log(`Found channel: ${channelName}`);
-                    // Check for redirects and follow them automatically
                     if (response.redirected) {
-                        const redirectedUrl = response.url; // The new URL after redirect
+                        const redirectedUrl = response.url;
                         console.log(`Redirecting to: ${redirectedUrl}`);
                         const followResponse = await fetch(redirectedUrl, {
                             method: 'POST',
@@ -129,7 +130,7 @@
                             updateFollowerCount();
                             console.log(`Successfully followed after redirect: ${redirectedUrl}`);
                         } else {
-                            console.log(`Failed to follow after redirect: ${followResponse.status}`);
+                            console.error(`Error: Failed to follow (redirected) - HTTP Status: ${followResponse.status}`);
                         }
                     } else {
                         const followResponse = await fetch(`https://www.twitch.tv/follow/${channelName}`, {
@@ -146,11 +147,11 @@
                             updateFollowerCount();
                             console.log(`Successfully followed: ${channelName}`);
                         } else {
-                            console.log(`Failed to follow ${channelName}: ${followResponse.status}`);
+                            console.error(`Error: Failed to follow - HTTP Status: ${followResponse.status}`);
                         }
                     }
                 } else {
-                    console.log(`Failed to load channel page for ${channelName}: ${response.status}`);
+                    console.error(`Error: Failed to load channel page - HTTP Status: ${response.status}`);
                 }
             } catch (e) {
                 console.error(`Error: ${e}`);
