@@ -12,14 +12,20 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #f9f9f9;
+            background: linear-gradient(120deg, #84fab0, #8fd3f4);
+            color: #333;
         }
         h1 {
-            color: #333;
+            color: #fff;
+            margin-top: 50px;
         }
         .container {
             margin-top: 50px;
             text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .control-panel {
             position: fixed;
@@ -59,15 +65,35 @@
         let followerCount = 0;
 
         async function loadProxies() {
-            const response = await fetch('proxies.txt');
-            const text = await response.text();
-            return text.split('\n').filter(line => line.trim());
+            try {
+                const response = await fetch('proxies.txt');
+                if (response.ok) {
+                    const text = await response.text();
+                    return text.split('\n').filter(line => line.trim());
+                } else {
+                    alert('Failed to load proxies. Ensure proxies.txt exists.');
+                    return [];
+                }
+            } catch (error) {
+                console.error('Error loading proxies:', error);
+                return [];
+            }
         }
 
         async function loadTokens() {
-            const response = await fetch('tokens.txt');
-            const text = await response.text();
-            return text.split('\n').filter(line => line.trim());
+            try {
+                const response = await fetch('tokens.txt');
+                if (response.ok) {
+                    const text = await response.text();
+                    return text.split('\n').filter(line => line.trim());
+                } else {
+                    alert('Failed to load tokens. Ensure tokens.txt exists.');
+                    return [];
+                }
+            } catch (error) {
+                console.error('Error loading tokens:', error);
+                return [];
+            }
         }
 
         async function followChannelCustom(token, proxy, channelName) {
@@ -121,6 +147,11 @@
 
             document.getElementById('start').addEventListener('click', async () => {
                 const targetChannel = document.getElementById('channel').value;
+
+                if (!targetChannel) {
+                    alert('Please enter a Twitch channel name.');
+                    return;
+                }
 
                 for (const token of tokens) {
                     for (const proxy of proxies) {
