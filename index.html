@@ -111,21 +111,43 @@
 
                 if (response.ok) {
                     console.log(`Found channel: ${channelName}`);
-                    const followResponse = await fetch(`https://www.twitch.tv/follow/${channelName}`, {
-                        method: 'POST',
-                        headers: {
-                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-                            "Referer": "https://www.twitch.tv/",
-                            "Cookie": `auth-token=${authToken}`
-                        }
-                    });
+                    // Check for redirects and follow them automatically
+                    if (response.redirected) {
+                        const redirectedUrl = response.url; // The new URL after redirect
+                        console.log(`Redirecting to: ${redirectedUrl}`);
+                        const followResponse = await fetch(redirectedUrl, {
+                            method: 'POST',
+                            headers: {
+                                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+                                "Referer": "https://www.twitch.tv/",
+                                "Cookie": `auth-token=${authToken}`
+                            }
+                        });
 
-                    if (followResponse.ok) {
-                        followerCount++;
-                        updateFollowerCount();
-                        console.log(`Successfully followed: ${channelName}`);
+                        if (followResponse.ok) {
+                            followerCount++;
+                            updateFollowerCount();
+                            console.log(`Successfully followed after redirect: ${redirectedUrl}`);
+                        } else {
+                            console.log(`Failed to follow after redirect: ${followResponse.status}`);
+                        }
                     } else {
-                        console.log(`Failed to follow ${channelName}: ${followResponse.status}`);
+                        const followResponse = await fetch(`https://www.twitch.tv/follow/${channelName}`, {
+                            method: 'POST',
+                            headers: {
+                                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+                                "Referer": "https://www.twitch.tv/",
+                                "Cookie": `auth-token=${authToken}`
+                            }
+                        });
+
+                        if (followResponse.ok) {
+                            followerCount++;
+                            updateFollowerCount();
+                            console.log(`Successfully followed: ${channelName}`);
+                        } else {
+                            console.log(`Failed to follow ${channelName}: ${followResponse.status}`);
+                        }
                     }
                 } else {
                     console.log(`Failed to load channel page for ${channelName}: ${response.status}`);
