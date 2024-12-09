@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitch Channel Follower</title>
+    <script>
+        async function loadProxies() {
+            const response = await fetch('proxies.txt');
+            const text = await response.text();
+            return text.split('\n').filter(line => line.trim());
+        }
+
+        async function loadTokens() {
+            const response = await fetch('tokens.txt');
+            const text = await response.text();
+            return text.split('\n').filter(line => line.trim());
+        }
+
+        async function followChannelCustom(token, proxy, channelName) {
+            try {
+                const response = await fetch(`https://www.twitch.tv/${channelName}`, {
+                    headers: {
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+                        "Referer": "https://www.twitch.tv/",
+                        "Cookie": `auth-token=${token}`
+                    },
+                    mode: 'cors',
+                    proxy
+                });
+
+                if (response.ok) {
+                    console.log(`Found channel: ${channelName}`);
+                    const followResponse = await fetch(`https://www.twitch.tv/follow/${channelName}`, {
+                        method: 'POST',
+                        headers: {
+                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+                            "Referer": "https://www.twitch.tv/",
+                            "Cookie": `auth-token=${token}`
+                        }
+                    });
+
+                    if (followResponse.ok) {
+                        console.log(`Successfully followed: ${channelName}`);
+                    } else {
+                        console.log(`Failed to follow ${channelName}: ${followResponse.status}`);
+                    }
+                } else {
+                    console.log(`Failed to load channel page for ${channelName}: ${response.status}`);
+                }
+            } catch (e) {
+                console.error(`Error: ${e}`);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const proxies = await loadProxies();
+            const tokens = await loadTokens();
+
+            document.getElementById('start').addEventListener('click', async () => {
+                const targetChannel = document.getElementById('channel').value;
+                const numProxies = Math.min(parseInt(document.getElementById('numProxies').value), proxies.length);
+                const numTokens = Math.min(parseInt(document.getElementById('numTokens').value), tokens.length);
+
+                for (let i = 0; i < numTokens; i++) {
+                    const token = tokens[i];
+                    for (let j = 0; j < numProxies; j++) {
+                        const proxy = proxies[j];
+                        console.log(`Using proxy: ${proxy} with token: ${token.slice(0, 10)}...`);
+                        await followChannelCustom(token, proxy, targetChannel);
+                    }
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Twitch Channel Follower</h1>
+    <label for="channel">Enter Twitch Channel:</label>
+    <input type="text" id="channel" placeholder="Channel Name">
+    <br>
+    <label for="numProxies">Number of Proxies:</label>
+    <input type="number" id="numProxies">
+    <br>
+    <label for="numTokens">Number of Tokens:</label>
+    <input type="number" id="numTokens">
+    <br>
+    <button id="start">Start Following</button>
+</body>
+</html>
