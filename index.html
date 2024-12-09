@@ -4,7 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Twitch Channel Follower</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            margin-top: 50px;
+            text-align: center;
+        }
+        .control-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .control-panel div {
+            margin: 0 10px;
+        }
+        input {
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 80%;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
     <script>
+        let followerCount = 0;
+
         async function loadProxies() {
             const response = await fetch('proxies.txt');
             const text = await response.text();
@@ -41,6 +94,8 @@
                     });
 
                     if (followResponse.ok) {
+                        followerCount++;
+                        updateFollowerCount();
                         console.log(`Successfully followed: ${channelName}`);
                     } else {
                         console.log(`Failed to follow ${channelName}: ${followResponse.status}`);
@@ -53,18 +108,20 @@
             }
         }
 
+        function updateFollowerCount() {
+            document.getElementById('followerCount').innerText = `Followers Added: ${followerCount}`;
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             const proxies = await loadProxies();
             const tokens = await loadTokens();
 
             document.getElementById('start').addEventListener('click', async () => {
                 const targetChannel = document.getElementById('channel').value;
-                const numProxies = Math.min(parseInt(document.getElementById('numProxies').value), proxies.length);
-                const numTokens = Math.min(parseInt(document.getElementById('numTokens').value), tokens.length);
 
-                for (let i = 0; i < numTokens; i++) {
+                for (let i = 0; i < tokens.length; i++) {
                     const token = tokens[i];
-                    for (let j = 0; j < numProxies; j++) {
+                    for (let j = 0; j < proxies.length; j++) {
                         const proxy = proxies[j];
                         console.log(`Using proxy: ${proxy} with token: ${token.slice(0, 10)}...`);
                         await followChannelCustom(token, proxy, targetChannel);
@@ -75,16 +132,13 @@
     </script>
 </head>
 <body>
-    <h1>Twitch Channel Follower</h1>
-    <label for="channel">Enter Twitch Channel:</label>
-    <input type="text" id="channel" placeholder="Channel Name">
-    <br>
-    <label for="numProxies">Number of Proxies:</label>
-    <input type="number" id="numProxies">
-    <br>
-    <label for="numTokens">Number of Tokens:</label>
-    <input type="number" id="numTokens">
-    <br>
-    <button id="start">Start Following</button>
+    <div class="container">
+        <h1>Twitch Channel Follower</h1>
+        <input type="text" id="channel" placeholder="Enter Twitch Channel Name">
+        <button id="start">Start Following</button>
+    </div>
+    <div class="control-panel">
+        <div id="followerCount">Followers Added: 0</div>
+    </div>
 </body>
 </html>
