@@ -71,15 +71,18 @@
         }
 
         async function followChannelCustom(token, proxy, channelName) {
+            const [ip, port] = proxy.split(':');
+            const [userId, authToken] = token.split('|');
+
             try {
+                const proxyUrl = `http://${ip}:${port}`;
                 const response = await fetch(`https://www.twitch.tv/${channelName}`, {
                     headers: {
                         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
                         "Referer": "https://www.twitch.tv/",
-                        "Cookie": `auth-token=${token}`
+                        "Cookie": `auth-token=${authToken}`
                     },
-                    mode: 'cors',
-                    proxy
+                    mode: 'cors'
                 });
 
                 if (response.ok) {
@@ -89,7 +92,7 @@
                         headers: {
                             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
                             "Referer": "https://www.twitch.tv/",
-                            "Cookie": `auth-token=${token}`
+                            "Cookie": `auth-token=${authToken}`
                         }
                     });
 
@@ -119,10 +122,8 @@
             document.getElementById('start').addEventListener('click', async () => {
                 const targetChannel = document.getElementById('channel').value;
 
-                for (let i = 0; i < tokens.length; i++) {
-                    const token = tokens[i];
-                    for (let j = 0; j < proxies.length; j++) {
-                        const proxy = proxies[j];
+                for (const token of tokens) {
+                    for (const proxy of proxies) {
                         console.log(`Using proxy: ${proxy} with token: ${token.slice(0, 10)}...`);
                         await followChannelCustom(token, proxy, targetChannel);
                     }
